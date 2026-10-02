@@ -1,4 +1,4 @@
-# =============================================================================
+﻿# =============================================================================
 #  Compile les versions publiables de l'application Sports SM et les copie dans
 #  2sm-laravel\public\downloads\ (les boutons de la page d'accueil s'activent).
 #     powershell -ExecutionPolicy Bypass -File build-release.ps1 [-Api https://2sm.fun/api] [-Android] [-Windows]
@@ -14,6 +14,13 @@ Set-Location $PSScriptRoot
 $downloads = Join-Path $PSScriptRoot '..\2sm-laravel\public\downloads'
 New-Item -ItemType Directory -Force $downloads | Out-Null
 if (-not $Android -and -not $Windows) { $Android = $true; $Windows = $true }
+
+# Liens temporaires vers les plugins laissés par une compilation précédente : Flutter
+# refuse de les recréer sous Windows (« Cannot create link … errno = 183 »).
+foreach ($p in 'windows', 'linux', 'macos') {
+  $links = Join-Path $PSScriptRoot "$p/flutter/ephemeral/.plugin_symlinks"
+  if (Test-Path $links) { cmd /c rmdir /s /q "`"$links`"" }
+}
 
 flutter pub get
 if ($LASTEXITCODE -ne 0) { throw 'flutter pub get a échoué' }
