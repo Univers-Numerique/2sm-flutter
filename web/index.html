@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
+
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
+
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <base href="$FLUTTER_BASE_HREF">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="description" content="2SM - Sports Space Management Application">
+
+  <!-- iOS meta tags & icons -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="2SM">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <title>2SM - Sports Space Management</title>
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Preconnect to external resources -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  
+  <!-- Fallback for Google Fonts (will use system fonts if network fails) -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Loading indicator styles -->
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      background-color: #1E3A5F;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    }
+    
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: white;
+    }
+    
+    .loading-logo {
+      width: 120px;
+      height: 120px;
+      background: white;
+      border-radius: 24px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    
+    .loading-logo svg {
+      width: 60px;
+      height: 60px;
+      fill: #1E3A5F;
+    }
+    
+    .loading-title {
+      font-size: 36px;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    
+    .loading-subtitle {
+      font-size: 16px;
+      opacity: 0.9;
+      margin-bottom: 48px;
+    }
+    
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    
+    .loading-error {
+      display: none;
+      padding: 20px;
+      background: rgba(255, 0, 0, 0.2);
+      border-radius: 8px;
+      margin: 20px;
+      text-align: center;
+      max-width: 400px;
+    }
+    
+    .loading-error.visible {
+      display: block;
+    }
+    
+    .retry-button {
+      background: white;
+      color: #1E3A5F;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 16px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <!-- Loading screen while Flutter loads -->
+  <div class="loading-container" id="loading">
+    <div class="loading-logo">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+      </svg>
+    </div>
+    <div class="loading-title">2SM</div>
+    <div class="loading-subtitle">Sports Space Management</div>
+    <div class="loading-spinner"></div>
+    <div class="loading-error" id="error-container">
+      <p>Unable to load the application.</p>
+      <p id="error-message">Please check your internet connection.</p>
+      <button class="retry-button" onclick="location.reload()">Retry</button>
+    </div>
+  </div>
+
+  <script src="flutter_bootstrap.js" async onerror="showError('Failed to load Flutter engine')"></script>
+  
+  <script>
+    // Show error message if Flutter fails to load after timeout
+    let flutterLoaded = false;
+    
+    window.addEventListener('flutter_loaded', function() {
+      flutterLoaded = true;
+      document.getElementById('loading').style.display = 'none';
+    });
+    
+    // Show error after 15 seconds if Flutter hasn't loaded
+    setTimeout(function() {
+      if (!flutterLoaded) {
+        document.getElementById('error-container').classList.add('visible');
+        document.querySelector('.loading-spinner').style.display = 'none';
+      }
+    }, 15000);
+    
+    function showError(message) {
+      document.getElementById('error-message').textContent = message;
+      document.getElementById('error-container').classList.add('visible');
+    }
+  </script>
+</body>
+</html>
