@@ -37,10 +37,18 @@ if ($Windows) {
   Write-Host "→ Windows (API : $Api)"
   flutter build windows --release --dart-define=API_BASE_URL=$Api
   if ($LASTEXITCODE -ne 0) { throw 'La compilation Windows a échoué' }
-  $zip = Join-Path $downloads '2sm-windows.zip'
-  if (Test-Path $zip) { Remove-Item $zip -Force }
-  Compress-Archive -Path 'build\windows\x64\runner\Release\*' -DestinationPath $zip
-  Write-Host '  ✓ public\downloads\2sm-windows.zip'
+  # Installateur (Inno Setup, installer\sportssm.iss) ; version reprise de pubspec.yaml
+  $version = (Select-String -Path 'pubspec.yaml' -Pattern '^version:\s*([0-9.]+)').Matches[0].Groups[1].Value
+  $iscc = @("$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe", "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe", "$env:ProgramFiles\Inno Setup 6\ISCC.exe") |
+    Where-Object { Test-Path $_ } | Select-Object -First 1
+  if (-not $iscc) { throw 'Inno Setup est introuvable : winget install JRSoftware.InnoSetup' }
+  & $iscc /Q "/DAppVersion=$version" 'installer\sportssm.iss'
+  if ($LASTEXITCODE -ne 0) { throw "La création de l'installateur a échoué" }
+
+  # L'ancienne archive zip n'est plus proposée
+  $oldZip = Join-Path $downloads '2sm-windows.zip'
+  if (Test-Path $oldZip) { Remove-Item $oldZip -Force }
+  Write-Host "  ✓ public\downloads\SportsSM-Setup.exe (version $version)"
 }
 
 Write-Host 'Terminé. Téléversez le dossier public\downloads sur le serveur (ou refaites l''archive de déploiement).'

@@ -89,12 +89,12 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.2sm" "\0"
+            VALUE "CompanyName", "Univers Numérique" "\0"
             VALUE "FileDescription", "Sports SM" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "app_2sm" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.2sm. All rights reserved." "\0"
-            VALUE "OriginalFilename", "app_2sm.exe" "\0"
+            VALUE "InternalName", "SportsSM" "\0"
+            VALUE "LegalCopyright", "© 2026 Univers Numérique — Sports SM" "\0"
+            VALUE "OriginalFilename", "SportsSM.exe" "\0"
             VALUE "ProductName", "Sports SM" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
