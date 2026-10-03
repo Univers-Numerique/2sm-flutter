@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/constants/app_theme.dart';
 import '../../../../core/sync/sync_service.dart';
 import '../../../../shared/widgets/app_avatar.dart';
+import '../../../auth/application/auth_guard.dart';
 import '../../../auth/application/auth_provider.dart';
 import '../../../notifications/application/notifications_providers.dart';
 import '../nav_model.dart';
@@ -49,7 +50,7 @@ class _AppShellState extends ConsumerState<AppShell> {
     final isAdmin = user?.isAdmin ?? false;
     final unread = ref.watch(unreadNotificationsCountProvider).valueOrNull ?? 0;
     final syncStatus = ref.watch(syncStatusProvider).valueOrNull ?? SyncStatus.idle;
-    final groups = buildNavGroups(isAdmin: isAdmin);
+    final groups = buildNavGroups(isAdmin: isAdmin, isGuest: user == null);
     final width = MediaQuery.sizeOf(context).width;
     final content = Column(children: [
       _SyncBanner(status: syncStatus),
@@ -205,7 +206,9 @@ class _Sidebar extends ConsumerWidget {
             ),
           ),
           const Divider(height: 1),
-          _UserFooter(expanded: expanded, name: user?.fullName ?? '', email: user?.email ?? '', avatar: user?.avatar, onSelect: onSelect),
+          user == null
+              ? _GuestFooter(expanded: expanded)
+              : _UserFooter(expanded: expanded, name: user.fullName, email: user.email, avatar: user.avatar, onSelect: onSelect),
         ]),
       ),
     );
@@ -259,6 +262,31 @@ class _SidebarTile extends StatelessWidget {
   }
 }
 
+/// Visiteur : l'application se consulte librement, le compte se propose ici.
+class _GuestFooter extends StatelessWidget {
+  final bool expanded;
+  const _GuestFooter({required this.expanded});
+
+  @override
+  Widget build(BuildContext context) {
+    final from = GoRouterState.of(context).uri.toString();
+    if (!expanded) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: IconButton.filled(tooltip: 'Se connecter', onPressed: () => context.push(loginLocation(from: from)), icon: const Icon(Icons.login)),
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.all(14),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        FilledButton.icon(onPressed: () => context.push(loginLocation(from: from)), icon: const Icon(Icons.login, size: 18), label: const Text('Se connecter')),
+        const SizedBox(height: 8),
+        OutlinedButton(onPressed: () => context.push('/register'), child: const Text('Créer un compte')),
+      ]),
+    );
+  }
+}
+
 class _UserFooter extends ConsumerWidget {
   final bool expanded;
   final String name;
@@ -275,7 +303,9 @@ class _UserFooter extends ConsumerWidget {
       position: PopupMenuPosition.over,
       onSelected: (v) {
         if (v == 'logout') {
-          ref.read(authNotifierProvider.notifier).logout();
+          ref.read(authNotifierProvider.notifier).logout().then((_) {
+            if (context.mounted) context.go('/');
+          });
         } else {
           onSelect(v);
         }

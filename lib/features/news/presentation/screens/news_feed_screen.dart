@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../auth/application/auth_guard.dart';
 import '../../../../core/constants/app_theme.dart';
 import '../../../../core/network/failure.dart';
 import '../../../../shared/widgets/app_avatar.dart';
@@ -30,7 +31,9 @@ class _NewsFeedScreenState extends ConsumerState<NewsFeedScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Actualités')),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push('/news/compose'),
+        onPressed: () async {
+          if (await requireAccount(context, ref, reason: 'publier une actualité') && context.mounted) context.push('/news/compose');
+        },
         icon: const Icon(Icons.edit_outlined),
         label: const Text('Publier'),
       ),
@@ -159,6 +162,7 @@ class _LikeButton extends ConsumerWidget {
     return Expanded(
       child: TextButton.icon(
         onPressed: () async {
+          if (!await requireAccount(context, ref, reason: 'aimer cette actualité')) return;
           try {
             await ref.read(newsRepositoryProvider).toggleLike(news.id);
             ref.invalidate(newsDetailProvider(news.id));

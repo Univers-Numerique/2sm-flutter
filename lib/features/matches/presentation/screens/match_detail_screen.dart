@@ -261,7 +261,7 @@ class _ActionBar extends ConsumerWidget {
       spacing: 10,
       runSpacing: 10,
       children: [
-        if (user != null) FollowButton(table: FollowTable.match, entityId: m.id, followLabel: 'Suivre ce match'),
+        FollowButton(table: FollowTable.match, entityId: m.id, followLabel: 'Suivre ce match'),
         if (operator && !m.isFinished)
           FilledButton.icon(
             onPressed: () => context.push('/matches/${m.id}/live'),

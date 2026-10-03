@@ -155,6 +155,10 @@ class AuthRepository {
     await _clearSession();
   }
 
+  /// Session refusée par le serveur (jeton expiré ou révoqué) : on l'oublie
+  /// pour ne pas la reproposer à chaque lancement ; l'app reste consultable.
+  Future<void> forgetSession() => _clearSession();
+
   /// Returns the OTP echoed by the API in dev (no SMS/e-mail gateway).
   Future<String?> forgotPassword(String emailOrPhone) async {
     try {
@@ -195,6 +199,12 @@ class AuthRepository {
     try {
       final response = await _api.get<Map<String, dynamic>>(ApiConstants.currentUser);
       return await _persistSession({'user': response.data, 'token': token});
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        await _clearSession(); // jeton refusé : on continue en visiteur
+        return null;
+      }
+      return cachedUser; // hors ligne ou serveur indisponible : profil en cache
     } catch (_) {
       // Offline or server error: keep going with the cached profile.
       return cachedUser;

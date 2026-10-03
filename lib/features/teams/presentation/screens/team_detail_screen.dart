@@ -86,7 +86,7 @@ class TeamDetailScreen extends ConsumerWidget {
                   child: Center(
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 1180),
-                      child: Padding(padding: const EdgeInsets.fromLTRB(16, 16, 16, 8), child: _TeamHeader(team: team, isManager: isManager, canFollow: me != null && !isManager)),
+                      child: Padding(padding: const EdgeInsets.fromLTRB(16, 16, 16, 8), child: _TeamHeader(team: team, isManager: isManager, canFollow: !isManager)),
                     ),
                   ),
                 ),

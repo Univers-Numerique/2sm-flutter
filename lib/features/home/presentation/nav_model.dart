@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../auth/application/auth_guard.dart';
+
 /// One navigation entry, shared by the desktop sidebar, the mobile "Plus"
 /// menu and the Ctrl+K palette: a screen is declared here once.
 class NavItem {
@@ -32,7 +34,8 @@ const mobileTabs = [
 
 /// Grouped like the legacy sidebar (Matchs, Compétitions, Équipes,
 /// Utilisateurs, Admin).
-List<NavGroup> buildNavGroups({required bool isAdmin}) => [
+List<NavGroup> buildNavGroups({required bool isAdmin, bool isGuest = false}) {
+  final groups = [
       const NavGroup(null, [
         NavItem('Accueil', Icons.home_outlined, '/', selectedIcon: Icons.home),
       ]),
@@ -74,6 +77,14 @@ List<NavGroup> buildNavGroups({required bool isAdmin}) => [
           NavItem("Plans d'abonnement", Icons.card_giftcard_outlined, '/admin/plans', selectedIcon: Icons.card_giftcard),
         ]),
     ];
+  if (!isGuest) return groups;
+  // Visiteur : on garde tout ce qui se consulte, sans les espaces personnels.
+  return [
+    for (final g in groups)
+      if (g.items.any((i) => !routeNeedsAccount(i.route)))
+        NavGroup(g.title, [for (final i in g.items) if (!routeNeedsAccount(i.route)) i]),
+  ];
+}
 
 /// The nav item whose route best (longest prefix) matches [location].
 NavItem? activeNavItem(List<NavGroup> groups, String location) {

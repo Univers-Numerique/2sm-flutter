@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../core/constants/api_constants.dart';
@@ -78,6 +79,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     try {
       await ref.read(authRepositoryProvider).deleteAccount(userId);
       await ref.read(authNotifierProvider.notifier).logout();
+      if (mounted) context.go('/');
     } on Failure catch (e) {
       _toast(e.message);
     }
@@ -360,7 +362,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ),
                         const SizedBox(height: 16),
                         OutlinedButton.icon(
-                          onPressed: () => ref.read(authNotifierProvider.notifier).logout(),
+                          onPressed: () async {
+                            await ref.read(authNotifierProvider.notifier).logout();
+                            if (context.mounted) context.go('/');
+                          },
                           icon: const Icon(Icons.logout),
                           label: const Text('Se déconnecter'),
                           style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),

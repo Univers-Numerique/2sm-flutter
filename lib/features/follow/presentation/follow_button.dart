@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/network/failure.dart';
+import '../../auth/application/auth_guard.dart';
+import '../../auth/application/auth_provider.dart';
 import '../data/follow_repository.dart';
 
 /// Follow / unfollow toggle ("Suivre cette équipe", "M'abonner"...). Also
@@ -50,6 +52,14 @@ class _FollowButtonState extends ConsumerState<FollowButton> {
 
   @override
   Widget build(BuildContext context) {
+    // Visiteur : le bouton reste visible, la connexion est proposée au clic.
+    if (ref.watch(authNotifierProvider) is! AuthAuthenticated) {
+      return ElevatedButton.icon(
+        onPressed: () => requireAccount(context, ref, reason: 'suivre et être notifié'),
+        icon: const Icon(Icons.notifications_none, size: 18),
+        label: Text(widget.followLabel),
+      );
+    }
     final key = FollowKey(widget.table, widget.entityId);
     final status = ref.watch(followStatusProvider(key));
     final fg = widget.onDark ? Colors.white : null;

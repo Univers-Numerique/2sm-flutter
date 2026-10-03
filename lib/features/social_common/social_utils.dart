@@ -65,9 +65,17 @@ String stripHtml(String html) {
   return withBreaks
       .replaceAll(RegExp(r'<[^>]*>'), '')
       .replaceAll('&nbsp;', ' ')
-      .replaceAll('&amp;', '&')
       .replaceAll('&quot;', '"')
-      .replaceAll('&#39;', "'")
+      .replaceAll('&apos;', "'")
+      .replaceAll('&lt;', '<')
+      .replaceAll('&gt;', '>')
+      // Entités numériques (&#039; &#8217; &#x27;…) laissées par l'éditeur du site.
+      .replaceAllMapped(RegExp(r'&#(x[0-9a-fA-F]+|\d+);'), (m) {
+        final v = m[1]!;
+        final code = v.startsWith('x') ? int.tryParse(v.substring(1), radix: 16) : int.tryParse(v);
+        return code == null ? m[0]! : String.fromCharCode(code);
+      })
+      .replaceAll('&amp;', '&')
       .replaceAll(RegExp(r'\s+'), ' ')
       .trim();
 }

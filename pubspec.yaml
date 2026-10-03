@@ -1,7 +1,7 @@
 name: app_2sm
 description: "2SM - Sports Space Management Application"
 publish_to: 'none'
-version: 1.1.0+3
+version: 1.2.0+4
 
 environment:
   sdk: ^3.8.0
@@ -47,7 +47,7 @@ flutter:
   generate: true
   assets:
     - assets/branding/
-  # Polices de la charte 2SM, intégrées (fonctionnent hors connexion)
+  # Polices de la charte 2SM, intÃ©grÃ©es (fonctionnent hors connexion)
   fonts:
     - family: Sora
       fonts:
@@ -77,7 +77,7 @@ flutter:
           weight: 800
 
 flutter_launcher_icons:
-  # Sources générées par « php artisan brand:build --flutter=../2sm-flutter » (2sm-laravel)
+  # Sources gÃ©nÃ©rÃ©es par Â« php artisan brand:build --flutter=../2sm-flutter Â» (2sm-laravel)
   android: true
   ios: true
   image_path: "assets/branding/2sm-icone-1024.png"

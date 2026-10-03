@@ -120,6 +120,7 @@ final conversationsRepositoryProvider = Provider<ConversationsRepository>((ref) 
         entityType: 'conversation',
         endpoint: ApiConstants.conversations,
         extractItems: SyncableResource.laravelPage,
+        personal: true,
       ));
   return repo;
 });

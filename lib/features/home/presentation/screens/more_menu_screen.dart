@@ -23,7 +23,7 @@ class MoreMenuScreen extends ConsumerWidget {
 
     final tabRoutes = mobileTabs.map((t) => t.route).toSet();
     final groups = <_MenuGroup>[
-      for (final g in buildNavGroups(isAdmin: isAdmin))
+      for (final g in buildNavGroups(isAdmin: isAdmin, isGuest: authState is! AuthAuthenticated))
         if (g.title != null)
           _MenuGroup(g.title!, [
             for (final i in g.items)
@@ -49,6 +49,27 @@ class MoreMenuScreen extends ConsumerWidget {
                   subtitle: Text(user.email),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () => context.push('/profile'),
+                ),
+              )
+            else
+              // Visiteur : tout se consulte, le compte sert à participer.
+              Card(
+                margin: const EdgeInsets.only(bottom: 20),
+                child: Padding(
+                  padding: const EdgeInsets.all(18),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text('Rejoignez 2SM', style: Theme.of(context).textTheme.titleMedium),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Un compte gratuit pour publier, commenter, suivre vos équipes et gérer votre club.',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+                    ),
+                    const SizedBox(height: 14),
+                    Wrap(spacing: 10, runSpacing: 8, children: [
+                      FilledButton.icon(onPressed: () => context.push('/login'), icon: const Icon(Icons.login, size: 18), label: const Text('Se connecter')),
+                      OutlinedButton(onPressed: () => context.push('/register'), child: const Text('Créer un compte')),
+                    ]),
+                  ]),
                 ),
               ),
             for (final g in groups) ...[

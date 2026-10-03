@@ -68,7 +68,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   /// Called by the API client's 401 interceptor from anywhere in the app.
   void forceLogout() {
+    if (state is AuthUnauthenticated) return;
     state = const AuthUnauthenticated();
+    _repository.forgetSession();
   }
 
   /// Reflects a profile/avatar change already applied via the API (the

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../auth/application/auth_guard.dart';
 import '../../../../core/constants/app_theme.dart';
 import '../../../../core/network/failure.dart';
 import '../../../../shared/widgets/app_avatar.dart';
@@ -234,7 +235,9 @@ class _InfoTab extends ConsumerWidget {
                 style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(46)),
               )
             : FilledButton.icon(
-                onPressed: () => run(() => repo.join(activity.id)),
+                onPressed: () async {
+                  if (await requireAccount(context, ref, reason: 'participer à cette activité')) run(() => repo.join(activity.id));
+                },
                 icon: const Icon(Icons.how_to_reg_outlined),
                 label: const Text('Participer'),
                 style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(46)),

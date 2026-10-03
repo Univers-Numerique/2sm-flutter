@@ -14,6 +14,7 @@ import '../features/admin/presentation/screens/admin_plan_form_screen.dart';
 import '../features/admin/presentation/screens/admin_plans_screen.dart';
 import '../features/admin/presentation/screens/admin_teams_screen.dart';
 import '../features/admin/presentation/screens/admin_users_screen.dart';
+import '../features/auth/application/auth_guard.dart';
 import '../features/auth/application/auth_provider.dart';
 import '../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../features/auth/presentation/screens/login_screen.dart';
@@ -61,21 +62,28 @@ final routerRefreshProvider = Provider<GoRouterRefreshStream>((ref) {
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
-    initialLocation: '/login',
+    initialLocation: '/',
     refreshListenable: ref.watch(routerRefreshProvider),
     redirect: (context, state) {
       final authState = ref.read(authNotifierProvider);
+      if (authState is AuthUnknown) return null; // session en cours de restauration
+
       final loggingIn =
           state.matchedLocation == '/login' ||
           state.matchedLocation == '/register' ||
           state.matchedLocation == '/forgot-password';
-
-      if (authState is AuthUnknown)
-        return null; // splash while we restore session
       final authenticated = authState is AuthAuthenticated;
 
-      if (!authenticated && !loggingIn) return '/login';
-      if (authenticated && loggingIn) return '/';
+      // Visiteur : tout se consulte, seuls les espaces personnels et les
+      // écrans de création/gestion demandent de se connecter.
+      if (!authenticated && routeNeedsAccount(state.uri.path)) {
+        return loginLocation(from: state.uri.toString());
+      }
+      // Connecté depuis l'écran de connexion : retour là où on allait.
+      if (authenticated && loggingIn) {
+        final from = state.uri.queryParameters['from'];
+        return from != null && from.startsWith('/') && !from.startsWith('/login') ? from : '/';
+      }
       return null;
     },
     routes: [

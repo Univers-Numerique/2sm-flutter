@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../auth/application/auth_guard.dart';
 import '../../../../core/constants/app_theme.dart';
 import '../../../../core/network/failure.dart';
 import '../../../../shared/widgets/app_avatar.dart';
@@ -81,8 +82,9 @@ class _CompetitionDetailScreenState extends ConsumerState<CompetitionDetailScree
   }
 
   Future<void> _registerTeam(Competition c, List<int> alreadyIn) async {
+    if (!await requireAccount(context, ref, reason: 'inscrire votre équipe')) return;
     final auth = ref.read(authNotifierProvider);
-    if (auth is! AuthAuthenticated) return;
+    if (auth is! AuthAuthenticated || !mounted) return;
     final teams = (ref.read(teamsListProvider).valueOrNull ?? const []).where((t) => t.isManagedBy(auth.user.id) && !alreadyIn.contains(t.id)).toList();
     if (teams.isEmpty) {
       showSnack(context, "Aucune de vos équipes n'est disponible pour l'inscription.", error: true);
@@ -180,7 +182,7 @@ class _CompetitionDetailScreenState extends ConsumerState<CompetitionDetailScree
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _Header(o: o, isOwner: isOwner, canFollow: user != null, onToggleSelection: () => _toggleSelection(c)),
+                          _Header(o: o, isOwner: isOwner, canFollow: true, onToggleSelection: () => _toggleSelection(c)),
                           const SizedBox(height: 14),
                           SizedBox(
                             height: 42,
@@ -206,7 +208,7 @@ class _CompetitionDetailScreenState extends ConsumerState<CompetitionDetailScree
                             1 => _TeamsTab(
                                 o: o,
                                 isOwner: isOwner,
-                                canRegister: user != null,
+                                canRegister: true, // visiteur : la connexion est proposée au clic
                                 onRegister: () => _registerTeam(c, o.classement.map((r) => r.teamId).toList()),
                               ),
                             2 => _MatchesTab(o: o, isOwner: isOwner, onSchedule: () => _schedule(c), onClear: _clear),

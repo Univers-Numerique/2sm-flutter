@@ -131,6 +131,7 @@ final notificationsRepositoryProvider = Provider<NotificationsRepository>((ref) 
         endpoint: ApiConstants.notifications,
         extractItems: SyncableResource.laravelPage,
         onItemsPulled: repo._notifyNewItems,
+        personal: true,
       ));
   return repo;
 });

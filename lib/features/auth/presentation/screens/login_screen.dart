@@ -162,11 +162,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         children: [
                           const Text("Pas encore de compte ?", style: TextStyle(color: Colors.white70)),
                           TextButton(
-                            onPressed: () => context.push('/register'),
+                            onPressed: () {
+                              final from = GoRouterState.of(context).uri.queryParameters['from'];
+                              context.push(Uri(path: '/register', queryParameters: {'from': ?from}).toString());
+                            },
                             style: TextButton.styleFrom(foregroundColor: AppColors.primaryLight),
                             child: const Text('Créer un compte'),
                           ),
                         ],
+                      ),
+                      const SizedBox(height: 4),
+                      // L'application se consulte sans compte : on peut toujours revenir.
+                      TextButton.icon(
+                        onPressed: () => context.canPop() ? context.pop() : context.go('/'),
+                        style: TextButton.styleFrom(foregroundColor: Colors.white70),
+                        icon: const Icon(Icons.arrow_back, size: 18),
+                        label: const Text('Continuer sans compte'),
                       ),
                     ],
                   ),

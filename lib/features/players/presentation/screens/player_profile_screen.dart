@@ -6,6 +6,7 @@ import '../../../../core/constants/app_theme.dart';
 import '../../../../core/network/failure.dart';
 import '../../../../shared/widgets/app_avatar.dart';
 import '../../../../shared/widgets/app_ui.dart';
+import '../../../auth/application/auth_guard.dart';
 import '../../../auth/application/auth_provider.dart';
 import '../../../follow/data/follow_repository.dart';
 import '../../../follow/presentation/follow_button.dart';
@@ -126,7 +127,7 @@ class PlayerProfileBody extends ConsumerWidget {
   }
 }
 
-class _Hero extends StatelessWidget {
+class _Hero extends ConsumerWidget {
   final PlayerUser user;
   final UserStats? stats;
   final bool isSelf;
@@ -134,7 +135,7 @@ class _Hero extends StatelessWidget {
   const _Hero({required this.user, required this.stats, required this.isSelf, required this.actions});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final t = Theme.of(context).textTheme;
     final sub = [if (user.profession != null) user.profession!, if (user.ville != null) user.ville!].join(' · ');
     return Container(
@@ -187,7 +188,11 @@ class _Hero extends StatelessWidget {
               if (!isSelf) FollowButton(table: FollowTable.user, entityId: user.id, followLabel: "M'abonner", unfollowLabel: 'Me désabonner', onDark: true),
               if (!isSelf)
                 FilledButton.tonalIcon(
-                  onPressed: () => context.push('/messaging/private/${user.id}'),
+                  onPressed: () async {
+                    if (await requireAccount(context, ref, reason: 'envoyer un message') && context.mounted) {
+                      context.push('/messaging/private/${user.id}');
+                    }
+                  },
                   icon: const Icon(Icons.chat_bubble_outline, size: 18),
                   label: const Text('Messages'),
                 ),

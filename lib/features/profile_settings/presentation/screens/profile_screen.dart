@@ -84,7 +84,10 @@ class _Shortcuts extends ConsumerWidget {
           tile(Icons.lock_outline, 'Changer le mot de passe', () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const ChangePasswordScreen()))),
           tile(Icons.apps_outlined, 'Activités, terrains, calendrier…', () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const MoreMenuScreen()))),
           const Divider(height: 1),
-          tile(Icons.logout, 'Déconnexion', () => ref.read(authNotifierProvider.notifier).logout(), color: AppColors.error),
+          tile(Icons.logout, 'Déconnexion', () async {
+            await ref.read(authNotifierProvider.notifier).logout();
+            if (context.mounted) context.go('/');
+          }, color: AppColors.error),
         ],
       ),
     );

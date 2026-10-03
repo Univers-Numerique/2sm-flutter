@@ -28,6 +28,10 @@ class SyncableResource {
   /// sync layer knowing anything about that UI concern.
   final void Function(List<Map<String, dynamic>> items)? onItemsPulled;
 
+  /// Données propres au compte connecté (messagerie, notifications) : jamais
+  /// demandées pour un visiteur, qui consulte l'application sans compte.
+  final bool personal;
+
   const SyncableResource({
     required this.entityType,
     required this.endpoint,
@@ -35,6 +39,7 @@ class SyncableResource {
     this.updatedAtField = 'updated_at',
     required this.extractItems,
     this.onItemsPulled,
+    this.personal = false,
   });
 
   static List<Map<String, dynamic>> laravelPage(Map<String, dynamic> body) {
@@ -93,9 +98,17 @@ class SyncService {
         return;
       }
 
-      await _drainOutbox();
+      if (_api.authToken != null) await _drainOutbox(); // envois en attente : toujours ceux d'un compte
       for (final resource in _resources) {
-        await _pull(resource);
+        if (resource.personal && _api.authToken == null) continue;
+        try {
+          await _pull(resource);
+        } on DioException catch (e) {
+          // Données personnelles refusées (session expirée) : la déconnexion
+          // est gérée par l'intercepteur, ce n'est pas une panne de synchro.
+          if (resource.personal && e.response?.statusCode == 401) continue;
+          rethrow;
+        }
       }
       _statusController.add(SyncStatus.idle);
     } catch (e, stackTrace) {

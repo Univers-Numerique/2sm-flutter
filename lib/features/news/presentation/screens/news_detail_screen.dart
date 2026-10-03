@@ -3,6 +3,7 @@ import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../auth/application/auth_guard.dart';
 import '../../../../core/constants/app_theme.dart';
 import '../../../../core/network/failure.dart';
 import '../../../../shared/widgets/app_avatar.dart';
@@ -39,6 +40,7 @@ class _NewsDetailScreenState extends ConsumerState<NewsDetailScreen> {
   Future<void> _send() async {
     final txt = _comment.text.trim();
     if (txt.isEmpty) return;
+    if (!await requireAccount(context, ref, reason: 'commenter')) return;
     setState(() => _sending = true);
     try {
       await ref.read(newsRepositoryProvider).addComment(widget.newsId, txt);
@@ -52,6 +54,7 @@ class _NewsDetailScreenState extends ConsumerState<NewsDetailScreen> {
   }
 
   Future<void> _like() async {
+    if (!await requireAccount(context, ref, reason: 'aimer cette actualité')) return;
     try {
       await ref.read(newsRepositoryProvider).toggleLike(widget.newsId);
       ref.invalidate(newsDetailProvider(widget.newsId));
