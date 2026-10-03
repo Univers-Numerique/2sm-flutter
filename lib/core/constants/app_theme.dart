@@ -48,7 +48,9 @@ class AppColors {
 
   /// Dégradé sombre (en-têtes, tableau de score) — identique au site.
   static const LinearGradient heroGradient = LinearGradient(
-    colors: [BrandTokens.marine950, BrandTokens.marine800],
+    // Marine, avec la lueur verte du coin inférieur droit des bandeaux du site.
+    colors: [BrandTokens.marine950, BrandTokens.marine800, Color(0xFF0E4A3C)],
+    stops: [0.0, 0.62, 1.0],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
@@ -264,6 +266,18 @@ class AppTheme {
           borderRadius: BorderRadius.circular(BrandTokens.rayonChamp),
           borderSide: const BorderSide(color: AppColors.error, width: 1),
         ),
+      ),
+      // Onglets comme sur le site : onglet actif en pilule verte, sans soulignement.
+      tabBarTheme: TabBarThemeData(
+        indicator: BoxDecoration(gradient: AppColors.primaryGradient, borderRadius: BorderRadius.circular(999)),
+        indicatorSize: TabBarIndicatorSize.tab,
+        dividerColor: Colors.transparent,
+        labelColor: Colors.white,
+        unselectedLabelColor: AppColors.textSecondary,
+        labelStyle: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+        unselectedLabelStyle: textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
+        labelPadding: const EdgeInsets.symmetric(horizontal: 18),
+        splashBorderRadius: BorderRadius.circular(999),
       ),
       chipTheme: ChipThemeData(
         backgroundColor: AppColors.surfaceVariant,

@@ -184,24 +184,7 @@ class _CompetitionDetailScreenState extends ConsumerState<CompetitionDetailScree
                         children: [
                           _Header(o: o, isOwner: isOwner, canFollow: true, onToggleSelection: () => _toggleSelection(c)),
                           const SizedBox(height: 14),
-                          SizedBox(
-                            height: 42,
-                            child: ListView.separated(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: _tabs.length,
-                              separatorBuilder: (_, _) => const SizedBox(width: 8),
-                              itemBuilder: (_, i) => ChoiceChip(
-                                label: Text(_tabs[i]),
-                                selected: _tab == i,
-                                showCheckmark: false,
-                                selectedColor: AppColors.secondary,
-                                backgroundColor: AppColors.card,
-                                side: BorderSide(color: _tab == i ? AppColors.secondary : AppColors.border),
-                                labelStyle: TextStyle(color: _tab == i ? Colors.white : AppColors.textPrimary, fontWeight: FontWeight.w700),
-                                onSelected: (_) => setState(() => _tab = i),
-                              ),
-                            ),
-                          ),
+                          PillTabs(tabs: _tabs, selected: _tab, onSelected: (i) => setState(() => _tab = i)),
                           const SizedBox(height: 14),
                           switch (_tab) {
                             0 => _DescriptionTab(o: o, isOwner: isOwner),

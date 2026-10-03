@@ -96,6 +96,7 @@ class TeamDetailScreen extends ConsumerWidget {
                     TabBar(
                       isScrollable: true,
                       tabAlignment: TabAlignment.start,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       tabs: [for (final t in tabs) Tab(text: _label(t))],
                     ),
                   ),

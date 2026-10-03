@@ -85,7 +85,8 @@ class NewsCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final text = Theme.of(context).textTheme;
     final cover = firstImageFromHtml(news.contenu);
-    final preview = truncateWords(stripHtml(news.contenu), 50);
+    final title = newsTitle(news.contenu);
+    final preview = truncateWords(newsExcerpt(news.contenu), 50);
     final authorName = news.author?.fullName.isNotEmpty == true ? news.author!.fullName : 'Utilisateur #${news.authorId}';
     return SurfaceCard(
       padding: EdgeInsets.zero,
@@ -108,12 +109,17 @@ class NewsCard extends ConsumerWidget {
           ),
           if (cover != null)
             AppCover(imageUrl: cover, height: 200, borderRadius: BorderRadius.zero),
+          if (title.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
+              child: Text(title, style: text.titleMedium?.copyWith(fontWeight: FontWeight.w800, height: 1.25)),
+            ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+            padding: EdgeInsets.fromLTRB(16, title.isNotEmpty ? 6 : 14, 16, 8),
             child: Text.rich(TextSpan(children: [
               TextSpan(text: '$preview '),
               TextSpan(text: 'Voir plus', style: text.bodyMedium?.copyWith(color: AppColors.primary, fontWeight: FontWeight.w700)),
-            ]), style: text.bodyLarge),
+            ]), style: text.bodyMedium?.copyWith(color: AppColors.textSecondary, height: 1.5)),
           ),
           const Divider(height: 1),
           Padding(

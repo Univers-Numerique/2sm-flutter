@@ -236,7 +236,7 @@ class _MatchLiveConsoleScreenState extends ConsumerState<MatchLiveConsoleScreen>
                                 Text(m.homeTeam?.nom ?? '', textAlign: TextAlign.center, style: text.titleSmall?.copyWith(color: Colors.white)),
                               ]),
                             ),
-                            Text('${m.homeGoals} - ${m.awayGoals}', style: AppTextStyles.score.copyWith(color: Colors.white, fontSize: 48)),
+                            ScoreDigits(home: m.homeGoals, away: m.awayGoals, size: 44),
                             Expanded(
                               child: Column(children: [
                                 AppAvatar(name: m.awayTeam?.nom ?? '?', imageUrl: m.awayTeam?.logo, size: 60, rounded: true),

@@ -114,25 +114,7 @@ class _MatchDetailScreenState extends ConsumerState<MatchDetailScreen> {
                           const SizedBox(height: 14),
                           _ActionBar(o: o, user: user, operator: operator),
                           const SizedBox(height: 14),
-                          SizedBox(
-                            height: 42,
-                            child: ListView.separated(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: _tabs.length,
-                              separatorBuilder: (_, _) => const SizedBox(width: 8),
-                              itemBuilder: (_, i) => ChoiceChip(
-                                label: Text(_tabs[i]),
-                                selected: _tab == i,
-                                showCheckmark: false,
-                                selectedColor: AppColors.secondary,
-                                backgroundColor: AppColors.card,
-                                side: BorderSide(color: _tab == i ? AppColors.secondary : AppColors.border),
-                                labelStyle: TextStyle(
-                                    color: _tab == i ? Colors.white : AppColors.textPrimary, fontWeight: FontWeight.w700),
-                                onSelected: (_) => setState(() => _tab = i),
-                              ),
-                            ),
-                          ),
+                          PillTabs(tabs: _tabs, selected: _tab, onSelected: (i) => setState(() => _tab = i)),
                           const SizedBox(height: 14),
                           switch (_tab) {
                             0 => _StatsTab(o: o),
@@ -207,7 +189,7 @@ class _ScoreHero extends StatelessWidget {
                   ],
                 ),
               ),
-              MatchStatusBadge(m.statut),
+              MatchStatusBadge(m.statut, onDark: true),
             ],
           ),
           const SizedBox(height: 16),
@@ -219,8 +201,12 @@ class _ScoreHero extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
                 child: Column(
                   children: [
-                    Text(started ? '${m.homeGoals} - ${m.awayGoals}' : 'VS', style: scoreStyle),
-                    const SizedBox(height: 4),
+                    Text('SCORE', style: text.labelSmall?.copyWith(color: Colors.white54, letterSpacing: 3, fontWeight: FontWeight.w700)),
+                    const SizedBox(height: 8),
+                    started
+                        ? ScoreDigits(home: m.homeGoals, away: m.awayGoals, size: 44)
+                        : Text('VS', style: scoreStyle),
+                    const SizedBox(height: 10),
                     Text(formatDateFr(m.dateDebut), style: text.labelMedium?.copyWith(color: Colors.white70)),
                     Text(formatTimeFr(m.heureDebut), style: text.labelLarge?.copyWith(color: Colors.white, fontWeight: FontWeight.w700)),
                   ],

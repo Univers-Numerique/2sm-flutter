@@ -80,6 +80,18 @@ String stripHtml(String html) {
       .trim();
 }
 
+final _headingRe = RegExp(r'<h[1-3][^>]*>(.*?)</h[1-3]>', caseSensitive: false, dotAll: true);
+
+/// Titre d'une actualité : son premier intertitre h1–h3 (comme
+/// HtmlSanitizer::title sur le site). Vide s'il n'y en a pas.
+String newsTitle(String html) {
+  final m = _headingRe.firstMatch(html);
+  return m == null ? '' : stripHtml(m[1]!);
+}
+
+/// Extrait en texte brut, sans le titre (HtmlSanitizer::excerpt du site).
+String newsExcerpt(String html) => stripHtml(html.replaceFirst(_headingRe, ' '));
+
 String truncateWords(String text, int maxWords) {
   final words = text.split(' ');
   if (words.length <= maxWords) return text;

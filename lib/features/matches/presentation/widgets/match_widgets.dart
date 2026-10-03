@@ -117,11 +117,26 @@ class LabelBadge extends StatelessWidget {
 
 class MatchStatusBadge extends StatelessWidget {
   final int statut;
-  const MatchStatusBadge(this.statut, {super.key});
+  final bool onDark;
+  const MatchStatusBadge(this.statut, {super.key, this.onDark = false});
 
   @override
   Widget build(BuildContext context) {
     final live = statut == MatchStatus.inProgress;
+    if (onDark && !live) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.white.withAlpha(14),
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(color: Colors.white.withAlpha(90)),
+        ),
+        child: Text(
+          matchStatusLabel(statut).toUpperCase(),
+          style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 0.8),
+        ),
+      );
+    }
     return StatusBadge(
       label: matchStatusLabel(statut),
       color: matchStatusColor(statut),
@@ -360,19 +375,20 @@ class StandingsTable extends StatelessWidget {
       child: Text(
         v,
         textAlign: TextAlign.center,
-        style: text.bodyMedium?.copyWith(
-          fontWeight: bold ? FontWeight.w800 : FontWeight.w500,
-          color: color,
+        style: AppTextStyles.stat.copyWith(
+          fontSize: 16,
+          fontWeight: bold ? FontWeight.w800 : FontWeight.w600,
+          color: color ?? AppColors.textPrimary,
         ),
       ),
     );
 
     return SurfaceCard(
       padding: EdgeInsets.zero,
-      child: SingleChildScrollView(
+      child: LayoutBuilder(builder: (context, box) => SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minWidth: 620),
+        child: SizedBox(
+          width: box.maxWidth < 620 ? 620 : box.maxWidth,
           child: Column(
             children: [
               Container(
@@ -387,7 +403,7 @@ class StandingsTable extends StatelessWidget {
                 child: Row(
                   children: [
                     SizedBox(width: 30, child: Text('#', style: head)),
-                    SizedBox(width: 170, child: Text('ÉQUIPE', style: head)),
+                    Expanded(child: Text('ÉQUIPE', style: head)),
                     for (final h in ['J', 'V', 'N', 'D', 'BP', 'BC', '+/-'])
                       SizedBox(
                         width: 34,
@@ -445,7 +461,7 @@ class StandingsTable extends StatelessWidget {
                                   : i < 3
                                   ? AppColors.primary.withAlpha(30)
                                   : Colors.transparent,
-                              borderRadius: BorderRadius.circular(8),
+                              shape: BoxShape.circle,
                             ),
                             child: Text(
                               '${i + 1}',
@@ -459,8 +475,7 @@ class StandingsTable extends StatelessWidget {
                             ),
                           ),
                         ),
-                        SizedBox(
-                          width: 170,
+                        Expanded(
                           child: Row(
                             children: [
                               AppAvatar(
@@ -545,7 +560,7 @@ class StandingsTable extends StatelessWidget {
             ],
           ),
         ),
-      ),
+      )),
     );
   }
 }

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_theme.dart';
+import '../../../../core/constants/brand_tokens.dart';
 import '../../../../core/sync/sync_service.dart';
 import '../../../../shared/widgets/app_avatar.dart';
 import '../../../auth/application/auth_guard.dart';
@@ -142,17 +143,24 @@ class _Sidebar extends ConsumerWidget {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
       width: expanded ? 264 : 76,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(right: BorderSide(color: AppColors.border)),
+      margin: const EdgeInsets.fromLTRB(12, 12, 0, 12),
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [BrandTokens.marine950, BrandTokens.marine900, Color(0xFF0D2E4A)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+        borderRadius: BorderRadius.circular(26),
+        boxShadow: [BoxShadow(color: AppColors.secondary.withAlpha(60), blurRadius: 28, offset: const Offset(0, 14))],
       ),
       child: SafeArea(
         child: Column(children: [
           Padding(
             padding: EdgeInsets.fromLTRB(expanded ? 20 : 0, 18, expanded ? 20 : 0, 8),
             child: Image.asset(
-              'assets/branding/2sm-embleme.png',
-              height: expanded ? 64 : 34,
+              'assets/branding/2sm-embleme-sur-fond-sombre.png',
+              height: expanded ? 58 : 32,
               fit: BoxFit.contain,
               alignment: expanded ? Alignment.centerLeft : Alignment.center,
             ),
@@ -161,25 +169,25 @@ class _Sidebar extends ConsumerWidget {
             padding: EdgeInsets.symmetric(horizontal: expanded ? 14 : 12, vertical: 8),
             child: expanded
                 ? InkWell(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(999),
                     onTap: onSearch,
                     child: Container(
                       height: 42,
                       padding: const EdgeInsets.symmetric(horizontal: 12),
-                      decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(12), border: Border.all(color: AppColors.border)),
+                      decoration: BoxDecoration(color: Colors.white.withAlpha(16), borderRadius: BorderRadius.circular(999)),
                       child: Row(children: [
-                        const Icon(Icons.search, size: 18, color: AppColors.textSecondary),
+                        const Icon(Icons.search, size: 18, color: Colors.white60),
                         const SizedBox(width: 8),
-                        Expanded(child: Text('Rechercher…', style: t.bodyMedium?.copyWith(color: AppColors.textSecondary))),
+                        Expanded(child: Text('Rechercher…', style: t.bodyMedium?.copyWith(color: Colors.white60))),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(6), border: Border.all(color: AppColors.border)),
-                          child: Text('Ctrl K', style: t.labelSmall?.copyWith(color: AppColors.textSecondary)),
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                          decoration: BoxDecoration(color: Colors.white.withAlpha(20), borderRadius: BorderRadius.circular(999)),
+                          child: Text('Ctrl K', style: t.labelSmall?.copyWith(color: Colors.white60)),
                         ),
                       ]),
                     ),
                   )
-                : IconButton(tooltip: 'Rechercher (Ctrl+K)', onPressed: onSearch, icon: const Icon(Icons.search)),
+                : IconButton(tooltip: 'Rechercher (Ctrl+K)', onPressed: onSearch, icon: const Icon(Icons.search, color: Colors.white70)),
           ),
           Expanded(
             child: ListView(
@@ -190,9 +198,9 @@ class _Sidebar extends ConsumerWidget {
                     expanded
                         ? Padding(
                             padding: const EdgeInsets.fromLTRB(10, 16, 10, 6),
-                            child: Text(g.title!.toUpperCase(), style: t.labelSmall?.copyWith(color: AppColors.textSecondary, letterSpacing: 1.1, fontWeight: FontWeight.w700)),
+                            child: Text(g.title!.toUpperCase(), style: t.labelSmall?.copyWith(color: Colors.white38, letterSpacing: 1.4, fontWeight: FontWeight.w700)),
                           )
-                        : const Padding(padding: EdgeInsets.symmetric(vertical: 8, horizontal: 8), child: Divider(height: 1)),
+                        : const Padding(padding: EdgeInsets.symmetric(vertical: 8, horizontal: 8), child: Divider(height: 1, color: Colors.white12)),
                   for (final i in g.items)
                     _SidebarTile(
                       item: i,
@@ -205,7 +213,7 @@ class _Sidebar extends ConsumerWidget {
               ],
             ),
           ),
-          const Divider(height: 1),
+          const Divider(height: 1, color: Colors.white12),
           user == null
               ? _GuestFooter(expanded: expanded)
               : _UserFooter(expanded: expanded, name: user.fullName, email: user.email, avatar: user.avatar, onSelect: onSelect),
@@ -225,15 +233,21 @@ class _SidebarTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = selected ? AppColors.primary : AppColors.textSecondary;
+    final color = selected ? Colors.white : Colors.white70;
     Widget icon = Icon(selected ? item.selectedIcon : item.icon, size: 22, color: color);
     if (badge > 0) icon = Badge.count(count: badge, child: icon);
-    final tile = Material(
-      color: selected ? AppColors.primary.withValues(alpha: 0.1) : Colors.transparent,
-      borderRadius: BorderRadius.circular(12),
+    final tile = DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: selected ? AppColors.primaryGradient : null,
+        borderRadius: BorderRadius.circular(999),
+        boxShadow: selected ? [BoxShadow(color: AppColors.primary.withAlpha(90), blurRadius: 14, offset: const Offset(0, 5))] : null,
+      ),
+      child: Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(999),
       child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        hoverColor: AppColors.primary.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(999),
+        hoverColor: Colors.white.withAlpha(14),
         onTap: onTap,
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: expanded ? 12 : 0, vertical: 10),
@@ -246,15 +260,14 @@ class _SidebarTile extends StatelessWidget {
                       item.label,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: selected ? AppColors.primary : AppColors.textPrimary, fontWeight: selected ? FontWeight.w700 : FontWeight.w500),
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: selected ? Colors.white : Colors.white.withAlpha(215), fontWeight: selected ? FontWeight.w700 : FontWeight.w500),
                     ),
                   ),
-                  if (selected) Container(width: 4, height: 18, decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(4))),
                 ])
               : Center(child: icon),
         ),
       ),
-    );
+    ));
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: expanded ? tile : Tooltip(message: item.label, child: tile),
@@ -281,7 +294,11 @@ class _GuestFooter extends StatelessWidget {
       child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
         FilledButton.icon(onPressed: () => context.push(loginLocation(from: from)), icon: const Icon(Icons.login, size: 18), label: const Text('Se connecter')),
         const SizedBox(height: 8),
-        OutlinedButton(onPressed: () => context.push('/register'), child: const Text('Créer un compte')),
+        OutlinedButton(
+          onPressed: () => context.push('/register'),
+          style: OutlinedButton.styleFrom(foregroundColor: Colors.white, side: const BorderSide(color: Colors.white38)),
+          child: const Text('Créer un compte'),
+        ),
       ]),
     );
   }
@@ -324,11 +341,11 @@ class _UserFooter extends ConsumerWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-                    Text(name, maxLines: 1, overflow: TextOverflow.ellipsis, style: t.titleSmall),
-                    Text(email, maxLines: 1, overflow: TextOverflow.ellipsis, style: t.bodySmall?.copyWith(color: AppColors.textSecondary)),
+                    Text(name, maxLines: 1, overflow: TextOverflow.ellipsis, style: t.titleSmall?.copyWith(color: Colors.white)),
+                    Text(email, maxLines: 1, overflow: TextOverflow.ellipsis, style: t.bodySmall?.copyWith(color: Colors.white54)),
                   ]),
                 ),
-                const Icon(Icons.unfold_more, size: 18, color: AppColors.textSecondary),
+                const Icon(Icons.unfold_more, size: 18, color: Colors.white54),
               ])
             : Center(child: AppAvatar(name: name, imageUrl: avatar, size: 38, rounded: true)),
       ),
