@@ -150,7 +150,7 @@ class _TopBar extends ConsumerWidget {
             ),
       if (!compact)
         Text(
-          u == null ? 'Connectez-vous pour accéder à votre espace membre.' : 'Nous sommes ravis de vous avoir parmi nous.',
+          u == null ? 'Matchs, compétitions et équipes sont en libre accès. Connectez-vous pour participer.' : 'Nous sommes ravis de vous avoir parmi nous.',
           style: t.bodySmall?.copyWith(color: AppColors.textTertiary),
         ),
     ]);
