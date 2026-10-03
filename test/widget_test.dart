@@ -1,4 +1,5 @@
-// Smoke test: the app boots to the login screen when no session is cached.
+// Smoke test: sans session, l'application s'ouvre en visiteur sur l'accueil
+// (consultable sans compte) et propose de se connecter dans le menu.
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,12 +9,20 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:app_2sm/app.dart';
 
 void main() {
-  testWidgets('App boots to the login screen', (WidgetTester tester) async {
+  testWidgets("L'app s'ouvre en visiteur sur l'accueil", (WidgetTester tester) async {
     SharedPreferences.setMockInitialValues({});
-    await tester.pumpWidget(const ProviderScope(child: App()));
-    await tester.pumpAndSettle();
+    tester.view.physicalSize = const Size(1366, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
 
-    expect(find.byType(Image), findsWidgets);
+    await tester.pumpWidget(const ProviderScope(child: App()));
+    // Pas de pumpAndSettle : les squelettes de chargement animent en continu.
+    for (var i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 200));
+    }
+
+    expect(find.text('Actualités'), findsWidgets);
     expect(find.text('Se connecter'), findsOneWidget);
+    expect(find.text('Créer un compte'), findsOneWidget);
   });
 }

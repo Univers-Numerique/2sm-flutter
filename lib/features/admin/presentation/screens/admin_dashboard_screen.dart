@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../../core/constants/app_theme.dart';
+import '../../../../core/constants/brand_tokens.dart';
 import '../../../../shared/widgets/app_avatar.dart';
 import '../../../../shared/widgets/app_ui.dart';
 import '../../application/admin_providers.dart';
@@ -163,7 +164,7 @@ class _KpiStrip extends StatelessWidget {
             label: 'Utilisateurs',
             value: '${counts.users}',
             icon: Icons.people_outline,
-            color: const Color(0xFF7C3AED),
+            color: AppColors.info,
             caption: '+${counts.newUsersThisMonth} ce mois-ci',
           )),
       _tap(
@@ -806,7 +807,7 @@ class _PlansCard extends StatelessWidget {
   final List<PlanStat> stats;
   const _PlansCard({required this.stats});
 
-  static const _palette = [AppColors.primary, AppColors.info, AppColors.warning, Color(0xFF7C3AED), AppColors.error];
+  static const _palette = [AppColors.primary, AppColors.info, AppColors.warning, BrandTokens.marine700, AppColors.error];
 
   @override
   Widget build(BuildContext context) {
