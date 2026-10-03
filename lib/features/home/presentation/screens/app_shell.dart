@@ -9,6 +9,7 @@ import '../../../../core/sync/sync_service.dart';
 import '../../../../shared/widgets/app_avatar.dart';
 import '../../../auth/application/auth_guard.dart';
 import '../../../auth/application/auth_provider.dart';
+import '../../../auth/data/models/app_user.dart';
 import '../../../notifications/application/notifications_providers.dart';
 import '../nav_model.dart';
 
@@ -53,7 +54,10 @@ class _AppShellState extends ConsumerState<AppShell> {
     final syncStatus = ref.watch(syncStatusProvider).valueOrNull ?? SyncStatus.idle;
     final groups = buildNavGroups(isAdmin: isAdmin, isGuest: user == null);
     final width = MediaQuery.sizeOf(context).width;
+    // Barre du haut comme sur le site ; sur téléphone, seulement sur les onglets principaux.
+    final showTopBar = width >= _wideBreakpoint || mobileTabRoutes.contains(widget.location);
     final content = Column(children: [
+      if (showTopBar) _TopBar(user: user, unread: unread, compact: width < _wideBreakpoint),
       _SyncBanner(status: syncStatus),
       Expanded(child: widget.child),
     ]);
@@ -117,6 +121,127 @@ class _AppShellState extends ConsumerState<AppShell> {
       ][i];
 }
 
+/// Barre du haut du site (partials/dashboard/navbar) : salutation à gauche,
+/// cloche et avatar à droite ; pour un visiteur, Me connecter / M'inscrire.
+class _TopBar extends ConsumerWidget {
+  final AppUser? user;
+  final int unread;
+  final bool compact;
+  const _TopBar({required this.user, required this.unread, required this.compact});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = Theme.of(context).textTheme;
+    final u = user;
+    final from = GoRouterState.of(context).uri.toString();
+    final firstName = (u?.prenoms ?? '').trim().isNotEmpty ? u!.prenoms!.trim() : (u?.fullName ?? '');
+
+    final greeting = Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+      u == null
+          ? Text('Bienvenue sur 2SM', maxLines: 1, overflow: TextOverflow.ellipsis, style: (compact ? t.titleMedium : t.titleLarge)?.copyWith(color: AppColors.textSecondary, fontWeight: FontWeight.w600))
+          : Text.rich(
+              TextSpan(children: [
+                const TextSpan(text: 'Bonjour, '),
+                TextSpan(text: firstName, style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w800)),
+              ]),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: (compact ? t.titleMedium : t.titleLarge)?.copyWith(color: AppColors.textSecondary, fontWeight: FontWeight.w600),
+            ),
+      if (!compact)
+        Text(
+          u == null ? 'Connectez-vous pour accéder à votre espace membre.' : 'Nous sommes ravis de vous avoir parmi nous.',
+          style: t.bodySmall?.copyWith(color: AppColors.textTertiary),
+        ),
+    ]);
+
+    final List<Widget> actions = u == null
+        ? [
+            compact
+                ? IconButton.filled(tooltip: 'Me connecter', onPressed: () => context.push(loginLocation(from: from)), icon: const Icon(Icons.login, size: 20))
+                : FilledButton.icon(onPressed: () => context.push(loginLocation(from: from)), icon: const Icon(Icons.login, size: 18), label: const Text('Me connecter')),
+            if (!compact) ...[
+              const SizedBox(width: 8),
+              OutlinedButton.icon(onPressed: () => context.push('/register'), icon: const Icon(Icons.person_add_alt_1_outlined, size: 18), label: const Text("M'inscrire")),
+            ],
+          ]
+        : [
+            _RoundAction(
+              tooltip: 'Notifications',
+              onTap: () => context.push('/notifications'),
+              child: unread > 0
+                  ? Badge.count(count: unread, child: const Icon(Icons.notifications_none, size: 22, color: AppColors.textPrimary))
+                  : const Icon(Icons.notifications_none, size: 22, color: AppColors.textPrimary),
+            ),
+            const SizedBox(width: 10),
+            PopupMenuButton<String>(
+              tooltip: 'Mon compte',
+              position: PopupMenuPosition.under,
+              onSelected: (v) {
+                if (v == 'logout') {
+                  ref.read(authNotifierProvider.notifier).logout().then((_) {
+                    if (context.mounted) context.go('/');
+                  });
+                } else {
+                  context.push(v);
+                }
+              },
+              itemBuilder: (_) => const [
+                PopupMenuItem(value: '/profile', child: ListTile(leading: Icon(Icons.person_outline), title: Text('Mon profil'), dense: true)),
+                PopupMenuItem(value: '/settings', child: ListTile(leading: Icon(Icons.settings_outlined), title: Text('Paramètres'), dense: true)),
+                PopupMenuDivider(),
+                PopupMenuItem(value: 'logout', child: ListTile(leading: Icon(Icons.logout, color: AppColors.error), title: Text('Déconnexion'), dense: true)),
+              ],
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: AppColors.primary.withAlpha(120), width: 2)),
+                child: AppAvatar(name: u.fullName, imageUrl: u.avatar, size: compact ? 34 : 40, rounded: true),
+              ),
+            ),
+          ];
+
+    return Container(
+      padding: EdgeInsets.fromLTRB(compact ? 16 : 24, compact ? 10 : 14, compact ? 12 : 20, compact ? 10 : 14),
+      decoration: const BoxDecoration(
+        color: AppColors.background,
+        border: Border(bottom: BorderSide(color: AppColors.border)),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Row(children: [
+          if (compact) ...[Image.asset('assets/branding/2sm-embleme.png', height: 30), const SizedBox(width: 12)],
+          Expanded(child: greeting),
+          ...actions,
+        ]),
+      ),
+    );
+  }
+}
+
+class _RoundAction extends StatelessWidget {
+  final String tooltip;
+  final VoidCallback onTap;
+  final Widget child;
+  const _RoundAction({required this.tooltip, required this.onTap, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: Material(
+        color: AppColors.card,
+        shape: const CircleBorder(),
+        elevation: 0,
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: onTap,
+          child: SizedBox(width: 42, height: 42, child: Center(child: child)),
+        ),
+      ),
+    );
+  }
+}
+
 class _Sidebar extends ConsumerWidget {
   final List<NavGroup> groups;
   final NavItem? active;
@@ -136,8 +261,6 @@ class _Sidebar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final auth = ref.watch(authNotifierProvider);
-    final user = auth is AuthAuthenticated ? auth.user : null;
     final t = Theme.of(context).textTheme;
 
     return AnimatedContainer(
@@ -213,10 +336,7 @@ class _Sidebar extends ConsumerWidget {
               ],
             ),
           ),
-          const Divider(height: 1, color: Colors.white12),
-          user == null
-              ? _GuestFooter(expanded: expanded)
-              : _UserFooter(expanded: expanded, name: user.fullName, email: user.email, avatar: user.avatar, onSelect: onSelect),
+          const SizedBox(height: 12),
         ]),
       ),
     );
@@ -271,84 +391,6 @@ class _SidebarTile extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: expanded ? tile : Tooltip(message: item.label, child: tile),
-    );
-  }
-}
-
-/// Visiteur : l'application se consulte librement, le compte se propose ici.
-class _GuestFooter extends StatelessWidget {
-  final bool expanded;
-  const _GuestFooter({required this.expanded});
-
-  @override
-  Widget build(BuildContext context) {
-    final from = GoRouterState.of(context).uri.toString();
-    if (!expanded) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        child: IconButton.filled(tooltip: 'Se connecter', onPressed: () => context.push(loginLocation(from: from)), icon: const Icon(Icons.login)),
-      );
-    }
-    return Padding(
-      padding: const EdgeInsets.all(14),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-        FilledButton.icon(onPressed: () => context.push(loginLocation(from: from)), icon: const Icon(Icons.login, size: 18), label: const Text('Se connecter')),
-        const SizedBox(height: 8),
-        OutlinedButton(
-          onPressed: () => context.push('/register'),
-          style: OutlinedButton.styleFrom(foregroundColor: Colors.white, side: const BorderSide(color: Colors.white38)),
-          child: const Text('Créer un compte'),
-        ),
-      ]),
-    );
-  }
-}
-
-class _UserFooter extends ConsumerWidget {
-  final bool expanded;
-  final String name;
-  final String email;
-  final String? avatar;
-  final ValueChanged<String> onSelect;
-  const _UserFooter({required this.expanded, required this.name, required this.email, required this.avatar, required this.onSelect});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final t = Theme.of(context).textTheme;
-    return PopupMenuButton<String>(
-      tooltip: 'Mon compte',
-      position: PopupMenuPosition.over,
-      onSelected: (v) {
-        if (v == 'logout') {
-          ref.read(authNotifierProvider.notifier).logout().then((_) {
-            if (context.mounted) context.go('/');
-          });
-        } else {
-          onSelect(v);
-        }
-      },
-      itemBuilder: (_) => const [
-        PopupMenuItem(value: '/profile', child: ListTile(leading: Icon(Icons.person_outline), title: Text('Mon profil'), dense: true)),
-        PopupMenuItem(value: '/settings', child: ListTile(leading: Icon(Icons.settings_outlined), title: Text('Paramètres'), dense: true)),
-        PopupMenuDivider(),
-        PopupMenuItem(value: 'logout', child: ListTile(leading: Icon(Icons.logout, color: AppColors.error), title: Text('Déconnexion'), dense: true)),
-      ],
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: expanded ? 16 : 0, vertical: 12),
-        child: expanded
-            ? Row(children: [
-                AppAvatar(name: name, imageUrl: avatar, size: 38, rounded: true),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-                    Text(name, maxLines: 1, overflow: TextOverflow.ellipsis, style: t.titleSmall?.copyWith(color: Colors.white)),
-                    Text(email, maxLines: 1, overflow: TextOverflow.ellipsis, style: t.bodySmall?.copyWith(color: Colors.white54)),
-                  ]),
-                ),
-                const Icon(Icons.unfold_more, size: 18, color: Colors.white54),
-              ])
-            : Center(child: AppAvatar(name: name, imageUrl: avatar, size: 38, rounded: true)),
-      ),
     );
   }
 }

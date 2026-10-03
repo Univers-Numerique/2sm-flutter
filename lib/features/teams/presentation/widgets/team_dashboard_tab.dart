@@ -45,6 +45,13 @@ class TeamDashboardTab extends ConsumerWidget {
   }
 }
 
+/// Nombre d'éléments affichés par bloc : le tableau de bord reste lisible,
+/// « Voir tout » mène à la liste complète.
+const _maxItems = 5;
+
+/// Disposition du tableau de bord d'équipe du site (_tdb-*.blade.php) :
+/// tuiles, puis (résultats | résumé), (statistiques | répartition),
+/// (responsables | meilleurs performeurs), et les listes récentes.
 class _Body extends StatelessWidget {
   final Team team;
   final TeamDashboard d;
@@ -72,58 +79,93 @@ class _Body extends StatelessWidget {
         subtitle: 'Statistiques des victoires et des défaites',
         child: ResultsBarChart(months: d.months),
       );
-      final summaryCard = _Card(
-        title: "Résumé de l'état",
-        subtitle: 'Répartition des résultats',
-        child: Column(children: [
-          ResultsDonut(wins: s.wins, draws: s.draws, defeats: s.defeats),
-          const Divider(height: 28),
-          Row(mainAxisAlignment: MainAxisAlignment.spaceAround, children: [
-            _Mini(label: 'Points', value: '${s.points}'),
-            _Mini(label: 'Buts encaissés', value: '${s.goalsConceded}'),
-            _Mini(label: 'Corners', value: '${s.corners}'),
-            _Mini(label: 'Cartons J.', value: '${s.yellowCards}'),
-          ]),
-        ]),
-      );
+      final summaryCard = _SummaryCard(stats: s);
       final matchesCard = _Card(
         title: 'Statistiques des matchs',
         subtitle: 'Buts marqués par mois (12 derniers mois)',
         child: GoalsLineChart(months: d.months),
       );
-      final categoriesCard = _CategoriesCard(matrix: d.categoryMatrix);
+      final donutCard = _Card(
+        title: 'Répartition des résultats',
+        child: ResultsDonut(wins: s.wins, draws: s.draws, defeats: s.defeats),
+      );
       final respCard = _ResponsablesCard(team: team);
+      final bestCard = _BestPerformersCard(list: d.topPerformers);
       final eventsCard = _EventsCard(matches: d.recentMatches);
       final activitiesCard = _ActivitiesCard(d: d);
       final tasksCard = _TasksCard(tasks: d.tasks);
-      final perfCard = _Card(
-        title: 'Performance',
-        subtitle: 'Par mois',
-        child: GoalsLineChart(months: d.months, color: AppColors.info),
-      );
-      final bestCard = _BestPerformersCard(list: d.topPerformers);
+      final categoriesCard = _CategoriesCard(matrix: d.categoryMatrix);
 
-      Widget stack(List<Widget> l) => Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [for (final w in l) Padding(padding: const EdgeInsets.only(bottom: 16), child: w)],
-          );
+      Widget pair(Widget left, Widget right) => wide
+          ? Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Expanded(flex: 2, child: left),
+              const SizedBox(width: 16),
+              Expanded(child: right),
+            ])
+          : Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [left, const SizedBox(height: 16), right]);
 
+      Widget trio(List<Widget> l) => wide
+          ? Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              for (var i = 0; i < l.length; i++) ...[if (i > 0) const SizedBox(width: 16), Expanded(child: l[i])],
+            ])
+          : Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              for (var i = 0; i < l.length; i++) ...[if (i > 0) const SizedBox(height: 16), l[i]],
+            ]);
+
+      const gap = SizedBox(height: 16);
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Wrap(spacing: 10, runSpacing: 10, children: [for (final t in tiles) SizedBox(width: tileW, height: 132, child: t)]),
-          const SizedBox(height: 16),
-          if (wide)
-            Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Expanded(flex: 2, child: stack([resultsCard, matchesCard, categoriesCard, respCard, Row(crossAxisAlignment: CrossAxisAlignment.start, children: [Expanded(child: eventsCard), const SizedBox(width: 16), Expanded(child: activitiesCard)])])),
-              const SizedBox(width: 16),
-              Expanded(child: stack([summaryCard, tasksCard, perfCard, bestCard])),
-            ])
-          else
-            stack([resultsCard, summaryCard, matchesCard, categoriesCard, respCard, eventsCard, activitiesCard, tasksCard, perfCard, bestCard]),
+          Wrap(spacing: 10, runSpacing: 10, children: [for (final t in tiles) SizedBox(width: tileW, height: 118, child: t)]),
+          gap,
+          pair(resultsCard, summaryCard),
+          gap,
+          pair(matchesCard, donutCard),
+          gap,
+          pair(respCard, bestCard),
+          gap,
+          trio([eventsCard, activitiesCard, tasksCard]),
+          gap,
+          categoriesCard,
         ],
       );
     });
+  }
+}
+
+/// « Résumé de l'état » : carte verte du site, matchs joués en grand.
+class _SummaryCard extends StatelessWidget {
+  final DashboardStats stats;
+  const _SummaryCard({required this.stats});
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    Widget mini(String label, int v) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('$v', style: AppTextStyles.stat.copyWith(fontSize: 22, color: Colors.white)),
+          Text(label, style: t.bodySmall?.copyWith(color: Colors.white70)),
+        ]);
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(colors: [AppColors.primaryLight, AppColors.primaryDark], begin: Alignment.topLeft, end: Alignment.bottomRight),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [BoxShadow(color: AppColors.primary.withAlpha(70), blurRadius: 24, offset: const Offset(0, 10))],
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text("Résumé de l'état", style: t.titleMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.w800)),
+        const SizedBox(height: 18),
+        Text('Matchs joués', style: t.bodyMedium?.copyWith(color: Colors.white70)),
+        Text('${stats.matchesPlayed}', style: AppTextStyles.score.copyWith(fontSize: 56, color: Colors.white)),
+        const SizedBox(height: 16),
+        Wrap(spacing: 22, runSpacing: 12, children: [
+          mini('Points', stats.points),
+          mini('Buts encaissés', stats.goalsConceded),
+          mini('Corners', stats.corners),
+          mini('Cartons jaunes', stats.yellowCards),
+        ]),
+      ]),
+    );
   }
 }
 
@@ -153,21 +195,6 @@ class _Card extends StatelessWidget {
         ],
       ),
     );
-  }
-}
-
-class _Mini extends StatelessWidget {
-  final String label;
-  final String value;
-  const _Mini({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    final t = Theme.of(context).textTheme;
-    return Column(children: [
-      Text(value, style: t.titleLarge?.copyWith(fontWeight: FontWeight.w800)),
-      Text(label, style: t.bodySmall, textAlign: TextAlign.center),
-    ]);
   }
 }
 
@@ -223,50 +250,61 @@ class _CategoriesCard extends StatelessWidget {
   }
 }
 
-/// "Liste des responsables": legacy table (Utilisateur / Genre / Contacts /
-/// Depuis) — here the team members from the detail payload.
+/// « Liste des responsables » du site : uniquement les postes honorifiques et le
+/// personnel administratif actifs (TeamDashboardService::responsables), 5 au plus.
 class _ResponsablesCard extends StatelessWidget {
   final Team team;
   const _ResponsablesCard({required this.team});
 
+  static const _staffTypes = {'Postes Honorifiques', 'Personnel Administratif'};
+
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
-    final members = team.members;
+    final staff = team.members.where((m) => _staffTypes.contains(m.type) && m.statut == 1).toList();
+    final shown = staff.take(_maxItems).toList();
     return _Card(
       title: 'Liste des responsables',
-      subtitle: "Membres de l'équipe",
-      child: members.isEmpty
-          ? Text('Aucun membre.', style: t.bodyMedium)
+      subtitle: staff.isEmpty ? null : '${staff.length} responsable${staff.length > 1 ? 's' : ''}',
+      child: staff.isEmpty
+          ? Text('Aucun responsable.', style: t.bodyMedium)
           : Column(children: [
-              for (final m in members)
+              for (final m in shown)
                 InkWell(
                   onTap: () => context.push('/users/${m.userId}'),
                   borderRadius: BorderRadius.circular(12),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(border: Border(bottom: BorderSide(color: AppColors.border.withAlpha(m == shown.last ? 0 : 255), width: 0.8))),
                     child: Row(children: [
-                      AppAvatar(name: m.fullName, imageUrl: m.avatar, size: 40),
+                      AppAvatar(name: m.fullName, imageUrl: m.avatar, size: 40, rounded: true),
                       const SizedBox(width: 12),
                       Expanded(
                         flex: 3,
                         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                           Text(m.fullName, style: t.titleSmall, maxLines: 1, overflow: TextOverflow.ellipsis),
-                          Text(m.poste ?? '—', style: t.bodySmall),
+                          Text(m.poste ?? '—', style: t.bodySmall, maxLines: 1, overflow: TextOverflow.ellipsis),
                         ]),
                       ),
-                      Expanded(
-                        flex: 3,
-                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Text(m.genre ?? '—', style: t.labelLarge),
-                          Text(m.user.dateDeNaissance == null ? '' : formatDateFr(m.user.dateDeNaissance), style: t.bodySmall),
-                        ]),
-                      ),
-                      if (MediaQuery.sizeOf(context).width >= 560)
-                        Expanded(flex: 3, child: Text(m.user.telephone ?? '', style: t.bodyMedium?.copyWith(color: AppColors.success, fontWeight: FontWeight.w600))),
-                      StatusBadge(label: timeAgo(m.position?.createdAt).isEmpty ? '—' : timeAgo(m.position?.createdAt)),
+                      if (MediaQuery.sizeOf(context).width >= 560) ...[
+                        Expanded(
+                          flex: 2,
+                          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            Text(m.genre ?? '—', style: t.labelLarge),
+                            if (m.user.dateDeNaissance != null) Text(formatDateFr(m.user.dateDeNaissance), style: t.bodySmall),
+                          ]),
+                        ),
+                        if ((m.user.telephone ?? '').isNotEmpty)
+                          Expanded(flex: 2, child: Text(m.user.telephone!, style: t.bodyMedium?.copyWith(color: AppColors.success, fontWeight: FontWeight.w600))),
+                      ],
+                      if (timeAgo(m.position?.createdAt).isNotEmpty) StatusBadge(label: timeAgo(m.position?.createdAt), color: AppColors.success),
                     ]),
                   ),
+                ),
+              if (staff.length > _maxItems)
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text('+ ${staff.length - _maxItems} autre${staff.length - _maxItems > 1 ? 's' : ''} dans « Gestion des membres »', style: t.bodySmall),
                 ),
             ]),
     );
@@ -284,7 +322,7 @@ class _EventsCard extends StatelessWidget {
       title: 'Événements récents',
       child: Column(children: [
         if (matches.isEmpty) Align(alignment: Alignment.centerLeft, child: Text('Aucun match.', style: t.bodyMedium)),
-        for (final m in matches)
+        for (final m in matches.take(_maxItems))
           InkWell(
             onTap: () => context.push('/matches/${m.id}'),
             child: Padding(
@@ -333,7 +371,7 @@ class _ActivitiesCard extends StatelessWidget {
       subtitle: '${d.activitiesFinished} terminée${d.activitiesFinished > 1 ? 's' : ''}, ${d.activitiesOngoing} en cours',
       child: Column(children: [
         if (d.activities.isEmpty) Align(alignment: Alignment.centerLeft, child: Text('Aucune activité.', style: t.bodyMedium)),
-        for (final a in d.activities)
+        for (final a in d.activities.take(_maxItems))
           InkWell(
             onTap: () => context.push('/activities/${a.id}'),
             child: Padding(
@@ -372,7 +410,7 @@ class _TasksCard extends StatelessWidget {
       child: tasks.isEmpty
           ? Text('Aucune tâche.', style: t.bodyMedium)
           : Column(children: [
-              for (final k in tasks)
+              for (final k in tasks.take(_maxItems))
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   dense: true,
@@ -398,7 +436,7 @@ class _BestPerformersCard extends StatelessWidget {
       child: list.isEmpty
           ? Text('Aucune évaluation.', style: t.bodyMedium)
           : Column(children: [
-              for (final p in list)
+              for (final p in list.take(_maxItems))
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   onTap: () => context.push('/users/${p.id}'),

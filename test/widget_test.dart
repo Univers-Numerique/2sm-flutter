@@ -22,7 +22,7 @@ void main() {
     }
 
     expect(find.text('Actualités'), findsWidgets);
-    expect(find.text('Se connecter'), findsOneWidget);
-    expect(find.text('Créer un compte'), findsOneWidget);
+    expect(find.text('Me connecter'), findsOneWidget);
+    expect(find.text("M'inscrire"), findsOneWidget);
   });
 }
