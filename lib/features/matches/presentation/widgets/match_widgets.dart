@@ -220,8 +220,8 @@ class MatchScoreboardCard extends StatelessWidget {
                             started
                                 ? '${match.homeGoals}  -  ${match.awayGoals}'
                                 : 'VS',
-                            style: text.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.w800,
+                            style: AppTextStyles.score.copyWith(
+                              fontSize: 30,
                               color: match.isInProgress
                                   ? AppColors.matchLive
                                   : AppColors.textPrimary,

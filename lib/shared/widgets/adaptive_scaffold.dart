@@ -48,7 +48,7 @@ class AdaptiveScaffold extends StatelessWidget {
               leading: const Padding(
                 padding: EdgeInsets.symmetric(vertical: 16),
                 child: Image(
-                  image: AssetImage('assets/branding/logo_emblem.png'),
+                  image: AssetImage('assets/branding/2sm-embleme.png'),
                   width: 40,
                   height: 40,
                   fit: BoxFit.contain,

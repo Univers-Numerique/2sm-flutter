@@ -150,8 +150,8 @@ class _Sidebar extends ConsumerWidget {
           Padding(
             padding: EdgeInsets.fromLTRB(expanded ? 20 : 0, 18, expanded ? 20 : 0, 8),
             child: Image.asset(
-              expanded ? 'assets/branding/logo_full_transparent.png' : 'assets/branding/logo_emblem_transparent.png',
-              height: expanded ? 44 : 36,
+              'assets/branding/2sm-embleme.png',
+              height: expanded ? 64 : 34,
               fit: BoxFit.contain,
               alignment: expanded ? Alignment.centerLeft : Alignment.center,
             ),

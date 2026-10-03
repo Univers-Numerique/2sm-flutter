@@ -164,7 +164,7 @@ class _ScoreHero extends StatelessWidget {
     final m = o.match;
     final text = Theme.of(context).textTheme;
     final started = m.statut != MatchStatus.scheduled;
-    final scoreStyle = text.displaySmall?.copyWith(color: Colors.white, fontWeight: FontWeight.w800);
+    final scoreStyle = AppTextStyles.score.copyWith(color: Colors.white, fontSize: 48);
 
     Widget team(MatchTeamRef? t, String fallback) => Expanded(
           child: Column(

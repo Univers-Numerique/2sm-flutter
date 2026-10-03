@@ -1,66 +1,81 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
-/// Palette derived from the 2SM logo (assets/branding/logo.png): a vivid
-/// green (the runner/ball mark) paired with a deep navy (the "SM"
-/// wordmark).
+import 'brand_tokens.dart';
+
+/// Couleurs de l'application, issues de la charte 2SM commune au site
+/// (2sm-laravel/resources/brand/tokens.json → brand_tokens.dart).
 class AppColors {
-  static const Color primary = Color(0xFF16A34A);
-  static const Color primaryDark = Color(0xFF0D6B32);
-  static const Color primaryLight = Color(0xFF4CC96A);
+  static const Color primary = BrandTokens.vert600;
+  static const Color primaryDark = BrandTokens.vert700;
+  static const Color primaryLight = BrandTokens.vert500;
+  static const Color accent = BrandTokens.vert300;
 
-  static const Color secondary = Color(0xFF0B2540);
-  static const Color secondaryLight = Color(0xFF16324F);
-  static const Color secondaryDark = Color(0xFF05142A);
+  static const Color secondary = BrandTokens.marine900;
+  static const Color secondaryLight = BrandTokens.marine800;
+  static const Color secondaryDark = BrandTokens.marine950;
 
-  static const Color background = Color(0xFFF6F7F9);
-  static const Color surface = Color(0xFFFFFFFF);
-  static const Color surfaceVariant = Color(0xFFF0F2F5);
-  static const Color card = Color(0xFFFFFFFF);
-  static const Color border = Color(0xFFE7EAEE);
+  static const Color background = BrandTokens.fond;
+  static const Color surface = BrandTokens.surface;
+  static const Color surfaceVariant = Color(0xFFECEFF5);
+  static const Color card = BrandTokens.surface;
+  static const Color border = BrandTokens.ligne;
 
-  static const Color textPrimary = Color(0xFF0B2540);
-  static const Color textSecondary = Color(0xFF5B6B7C);
-  static const Color textTertiary = Color(0xFF95A1AD);
+  static const Color textPrimary = BrandTokens.encre;
+  static const Color textSecondary = BrandTokens.texte;
+  static const Color textTertiary = BrandTokens.attenue;
   static const Color textOnPrimary = Color(0xFFFFFFFF);
 
-  static const Color success = Color(0xFF22A559);
-  static const Color warning = Color(0xFFF59E0B);
-  static const Color error = Color(0xFFE53E4D);
-  static const Color info = Color(0xFF2E90FA);
+  static const Color success = BrandTokens.victoire;
+  static const Color warning = BrandTokens.nul;
+  static const Color error = BrandTokens.defaite;
+  static const Color info = BrandTokens.info;
 
-  static const Color matchWin = Color(0xFF22A559);
-  static const Color matchDraw = Color(0xFFF59E0B);
-  static const Color matchLoss = Color(0xFFE53E4D);
+  static const Color matchWin = BrandTokens.victoire;
+  static const Color matchDraw = BrandTokens.nul;
+  static const Color matchLoss = BrandTokens.defaite;
   static const Color matchPending = Color(0xFF9AA6B2);
-  static const Color matchLive = Color(0xFFE53E4D);
+  static const Color matchLive = BrandTokens.direct;
 
-  /// Soft, brand-tinted shadow — used in place of plain black shadows for a
-  /// less "Material default" and more contemporary sense of depth.
-  static Color shadow = secondary.withAlpha(20);
+  /// Ombre douce teintée marine (comme sur le site).
+  static Color shadow = secondary.withAlpha(22);
 
+  /// Dégradé principal (boutons, éléments actifs) — identique au site.
   static const LinearGradient primaryGradient = LinearGradient(
-    colors: [primaryLight, primary, primaryDark],
+    colors: [BrandTokens.vert500, BrandTokens.vert700],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
+  /// Dégradé sombre (en-têtes, tableau de score) — identique au site.
   static const LinearGradient heroGradient = LinearGradient(
-    colors: [secondaryDark, secondary, Color(0xFF0F3D2E)],
+    colors: [BrandTokens.marine950, BrandTokens.marine800],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 }
 
-/// Type system: Manrope (extra-bold, tight tracking) for anything that
-/// needs presence — display/headline/title — paired with Inter for body
-/// and label text, where plain legibility at small sizes matters more than
-/// character. This is the "two-font, high size/weight contrast" pattern
-/// common to modern sport/consumer apps, replacing the previous flat
-/// single-weight Poppins scale.
+/// Styles hors thème : chiffres « tableau d'affichage » (scores, chronomètre, statistiques).
+class AppTextStyles {
+  static const TextStyle score = TextStyle(
+    fontFamily: BrandTokens.fontChiffres,
+    fontWeight: FontWeight.w800,
+    fontFeatures: [FontFeature.tabularFigures()],
+    height: 1.0,
+  );
+
+  static const TextStyle stat = TextStyle(
+    fontFamily: BrandTokens.fontChiffres,
+    fontWeight: FontWeight.w700,
+    fontFeatures: [FontFeature.tabularFigures()],
+    height: 1.05,
+  );
+}
+
+/// Titres en Sora (gras, lettres resserrées), texte en Plus Jakarta Sans — comme sur le site.
 TextTheme _buildTextTheme(Color primaryText, Color secondaryText, Color tertiaryText) {
-  final display = GoogleFonts.manropeTextTheme();
-  final body = GoogleFonts.interTextTheme();
+  // Polices intégrées (assets/fonts) : Sora pour les titres, Plus Jakarta Sans pour le texte.
+  final display = ThemeData.light().textTheme.apply(fontFamily: BrandTokens.fontTitres);
+  final body = ThemeData.light().textTheme.apply(fontFamily: BrandTokens.fontTexte);
 
   return TextTheme(
     displayLarge: display.displayLarge?.copyWith(
@@ -182,7 +197,7 @@ class AppTheme {
         surfaceTintColor: Colors.transparent,
         shadowColor: AppColors.shadow,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(BrandTokens.rayonCarte),
           side: const BorderSide(color: AppColors.border, width: 1),
         ),
         color: AppColors.card,
@@ -195,10 +210,10 @@ class AppTheme {
           disabledBackgroundColor: AppColors.primary.withAlpha(110),
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: const StadiumBorder(),
           textStyle: textTheme.labelLarge?.copyWith(fontSize: 15, color: AppColors.textOnPrimary),
         ).copyWith(
-          shadowColor: const WidgetStatePropertyAll(Color(0x552FA35A)),
+          shadowColor: const WidgetStatePropertyAll(Color(0x5516A34A)),
           elevation: const WidgetStatePropertyAll(0),
           overlayColor: WidgetStatePropertyAll(Colors.white.withAlpha(25)),
         ),
@@ -206,9 +221,9 @@ class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.primary,
-          side: const BorderSide(color: AppColors.border, width: 1.5),
+          side: BorderSide(color: AppColors.primary.withAlpha(100), width: 1.5),
           padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: const StadiumBorder(),
           textStyle: textTheme.labelLarge?.copyWith(fontSize: 15, color: AppColors.primary),
         ),
       ),
@@ -216,7 +231,7 @@ class AppTheme {
         style: TextButton.styleFrom(
           foregroundColor: AppColors.primary,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape: const StadiumBorder(),
           textStyle: textTheme.labelLarge?.copyWith(fontSize: 14, color: AppColors.primary),
         ),
       ),
@@ -230,24 +245,24 @@ class AppTheme {
         labelStyle: textTheme.bodyMedium,
         hintStyle: textTheme.bodyMedium?.copyWith(color: AppColors.textTertiary),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(BrandTokens.rayonChamp),
           borderSide: const BorderSide(color: Colors.transparent),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(BrandTokens.rayonChamp),
           borderSide: const BorderSide(color: Colors.transparent),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.8),
+          borderRadius: BorderRadius.circular(BrandTokens.rayonChamp),
+          borderSide: BorderSide(color: AppColors.primary.withAlpha(140), width: 1),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.error, width: 1.4),
+          borderRadius: BorderRadius.circular(BrandTokens.rayonChamp),
+          borderSide: const BorderSide(color: AppColors.error, width: 1),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.error, width: 1.8),
+          borderRadius: BorderRadius.circular(BrandTokens.rayonChamp),
+          borderSide: const BorderSide(color: AppColors.error, width: 1),
         ),
       ),
       chipTheme: ChipThemeData(
@@ -265,12 +280,13 @@ class AppTheme {
         foregroundColor: AppColors.textOnPrimary,
         elevation: 3,
         highlightElevation: 6,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        shape: const StadiumBorder(),
+        extendedTextStyle: const TextStyle(fontFamily: BrandTokens.fontTitres, fontWeight: FontWeight.w700),
       ),
       navigationRailTheme: NavigationRailThemeData(
         backgroundColor: AppColors.surface,
         indicatorColor: AppColors.primary.withAlpha(30),
-        indicatorShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        indicatorShape: const StadiumBorder(),
         selectedIconTheme: const IconThemeData(color: AppColors.primary),
         unselectedIconTheme: const IconThemeData(color: AppColors.textTertiary),
         selectedLabelTextStyle: textTheme.labelMedium?.copyWith(color: AppColors.primary, fontWeight: FontWeight.w700),
@@ -281,7 +297,7 @@ class AppTheme {
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         indicatorColor: AppColors.primary.withAlpha(30),
-        indicatorShape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        indicatorShape: const StadiumBorder(),
         iconTheme: WidgetStateProperty.resolveWith((states) {
           final selected = states.contains(WidgetState.selected);
           return IconThemeData(color: selected ? AppColors.primary : AppColors.textTertiary);
@@ -348,7 +364,7 @@ class AppTheme {
           foregroundColor: AppColors.secondaryDark,
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: const StadiumBorder(),
         ),
       ),
     );

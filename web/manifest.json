@@ -3,7 +3,7 @@
     "short_name": "app_2sm",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#FFFFFF",
+    "background_color": "#061630",
     "theme_color": "#0B2540",
     "description": "A new Flutter project.",
     "orientation": "portrait-primary",

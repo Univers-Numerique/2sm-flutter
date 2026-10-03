@@ -140,7 +140,7 @@ class StatTile extends StatelessWidget {
           FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
-            child: Text(value, style: text.headlineMedium?.copyWith(fontWeight: FontWeight.w800)),
+            child: Text(value, style: AppTextStyles.stat.copyWith(fontSize: 30, color: AppColors.textPrimary)),
           ),
           Text(label, style: text.labelMedium, maxLines: 1, overflow: TextOverflow.ellipsis),
           if (caption != null) Text(caption!, style: text.bodySmall, maxLines: 1, overflow: TextOverflow.ellipsis),

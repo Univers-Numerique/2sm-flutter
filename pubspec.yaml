@@ -1,7 +1,7 @@
 name: app_2sm
 description: "2SM - Sports Space Management Application"
 publish_to: 'none'
-version: 1.0.1+2
+version: 1.1.0+3
 
 environment:
   sdk: ^3.8.0
@@ -12,7 +12,6 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   cupertino_icons: ^1.0.8
-  google_fonts: ^6.2.1
   cached_network_image: ^3.4.1
   shimmer: ^3.0.0
   flutter_riverpod: ^2.6.1
@@ -48,23 +47,53 @@ flutter:
   generate: true
   assets:
     - assets/branding/
+  # Polices de la charte 2SM, intégrées (fonctionnent hors connexion)
+  fonts:
+    - family: Sora
+      fonts:
+        - asset: assets/fonts/Sora-400.ttf
+        - asset: assets/fonts/Sora-600.ttf
+          weight: 600
+        - asset: assets/fonts/Sora-700.ttf
+          weight: 700
+        - asset: assets/fonts/Sora-800.ttf
+          weight: 800
+    - family: Plus Jakarta Sans
+      fonts:
+        - asset: assets/fonts/PlusJakartaSans-400.ttf
+        - asset: assets/fonts/PlusJakartaSans-500.ttf
+          weight: 500
+        - asset: assets/fonts/PlusJakartaSans-600.ttf
+          weight: 600
+        - asset: assets/fonts/PlusJakartaSans-700.ttf
+          weight: 700
+    - family: Saira Condensed
+      fonts:
+        - asset: assets/fonts/SairaCondensed-600.ttf
+          weight: 600
+        - asset: assets/fonts/SairaCondensed-700.ttf
+          weight: 700
+        - asset: assets/fonts/SairaCondensed-800.ttf
+          weight: 800
 
 flutter_launcher_icons:
+  # Sources générées par « php artisan brand:build --flutter=../2sm-flutter » (2sm-laravel)
   android: true
   ios: true
-  image_path: "assets/branding/icon_square.png"
+  image_path: "assets/branding/2sm-icone-1024.png"
+  remove_alpha_ios: true
   min_sdk_android: 21
-  adaptive_icon_background: "#FFFFFF"
-  adaptive_icon_foreground: "assets/branding/icon_square.png"
+  adaptive_icon_background: "#061630"
+  adaptive_icon_foreground: "assets/branding/2sm-icone-premier-plan.png"
   windows:
     generate: true
-    image_path: "assets/branding/icon_square.png"
+    image_path: "assets/branding/2sm-icone-arrondie-1024.png"
     icon_size: 256
   macos:
     generate: true
-    image_path: "assets/branding/icon_square.png"
+    image_path: "assets/branding/2sm-icone-arrondie-1024.png"
   web:
     generate: true
-    image_path: "assets/branding/icon_square.png"
-    background_color: "#FFFFFF"
+    image_path: "assets/branding/2sm-icone-1024.png"
+    background_color: "#061630"
     theme_color: "#0B2540"

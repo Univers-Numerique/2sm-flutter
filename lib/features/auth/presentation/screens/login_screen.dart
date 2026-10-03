@@ -78,17 +78,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Image.asset(
-                        'assets/branding/logo_emblem_transparent.png',
-                        height: 84,
+                        'assets/branding/2sm-complet-sur-fond-sombre.png',
+                        height: 170,
                         fit: BoxFit.contain,
+                        semanticLabel: '2SM — Sports Space Management. Le sport connecté, les talents révélés',
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Le sport connecté, les talents révélés',
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white70),
-                      ),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 28),
                       Container(
                         padding: const EdgeInsets.fromLTRB(28, 32, 28, 28),
                         decoration: BoxDecoration(
