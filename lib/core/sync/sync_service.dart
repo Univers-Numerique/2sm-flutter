@@ -60,9 +60,14 @@ class SyncService {
   final AppDatabase _db;
   final ApiClient _api;
   final _resources = <SyncableResource>[];
+  /// Types déjà entièrement rechargés depuis le lancement de l'application.
+  final _fullySynced = <String>{};
+  /// Garde-fou contre une pagination qui ne s'arrêterait pas.
+  static const _maxPages = 50;
   final _statusController = StreamController<SyncStatus>.broadcast();
   StreamSubscription<List<ConnectivityResult>>? _connectivitySub;
   bool _isSyncing = false;
+  bool _rerunRequested = false;
 
   SyncService(this._db, this._api) {
     _connectivitySub = Connectivity().onConnectivityChanged.listen((results) {
@@ -78,6 +83,10 @@ class SyncService {
 
   void registerResource(SyncableResource resource) {
     _resources.add(resource);
+    // Les dépôts naissent quand leur écran s'ouvre, souvent après la
+    // synchronisation du démarrage : synchroniser aussitôt la nouvelle ressource
+    // plutôt que d'attendre un changement de connexion.
+    scheduleMicrotask(syncNow);
   }
 
   void dispose() {
@@ -88,8 +97,14 @@ class SyncService {
   /// Drains the outbox first (so local edits reach the server before we pull
   /// a fresh snapshot back over them), then pulls every registered resource.
   Future<void> syncNow() async {
-    if (_isSyncing) return;
+    if (_isSyncing) {
+      // Demande arrivée pendant un passage (ex. ressource enregistrée trop tard
+      // pour lui) : refaire un passage à la fin plutôt que de l'ignorer.
+      _rerunRequested = true;
+      return;
+    }
     _isSyncing = true;
+    _rerunRequested = false;
     _statusController.add(SyncStatus.syncing);
     try {
       final connectivity = await Connectivity().checkConnectivity();
@@ -99,7 +114,11 @@ class SyncService {
       }
 
       if (_api.authToken != null) await _drainOutbox(); // envois en attente : toujours ceux d'un compte
-      for (final resource in _resources) {
+      // Parcours par index : un dépôt peut s'enregistrer pendant un `await`
+      // (écran ouvert entre-temps) ; il est alors synchronisé dans ce passage
+      // au lieu de faire échouer l'itération.
+      for (var i = 0; i < _resources.length; i++) {
+        final resource = _resources[i];
         if (resource.personal && _api.authToken == null) continue;
         try {
           await _pull(resource);
@@ -118,6 +137,7 @@ class SyncService {
       _statusController.add(SyncStatus.error);
     } finally {
       _isSyncing = false;
+      if (_rerunRequested) scheduleMicrotask(syncNow);
     }
   }
 
@@ -150,25 +170,44 @@ class SyncService {
   }
 
   Future<void> _pull(SyncableResource resource) async {
-    final since = await _db.lastSyncedAt(resource.entityType);
-    final response = await _api.get<Map<String, dynamic>>(
-      resource.endpoint,
-      queryParameters: since != null ? {'updated_since': since.toIso8601String()} : null,
-    );
-    final body = response.data;
-    if (body == null) return;
-
-    final items = resource.extractItems(body);
+    // Premier passage de la session : tout recharger. Le mode incrémental
+    // (`updated_since`) ne rattrape ni un élément manqué auparavant, ni les
+    // compteurs (vues, j'aime, commentaires) qui ne modifient pas `updated_at`.
+    final full = !_fullySynced.contains(resource.entityType);
+    final since = full ? null : await _db.lastSyncedAt(resource.entityType);
+    final pulled = <Map<String, dynamic>>[];
     DateTime latest = since ?? DateTime.fromMillisecondsSinceEpoch(0);
-    for (final item in items) {
-      final id = item[resource.idField].toString();
-      final updatedAtRaw = item[resource.updatedAtField]?.toString();
-      final updatedAt = updatedAtRaw != null ? (DateTime.tryParse(updatedAtRaw) ?? DateTime.now()) : DateTime.now();
-      await _db.upsertEntity(resource.entityType, id, jsonEncode(item), updatedAt);
-      if (updatedAt.isAfter(latest)) latest = updatedAt;
-    }
+
+    // L'API pagine (20 par page) : parcourir toutes les pages, pas seulement la première.
+    var page = 1;
+    var lastPage = 1;
+    do {
+      final response = await _api.get<Map<String, dynamic>>(
+        resource.endpoint,
+        queryParameters: {
+          if (since != null) 'updated_since': since.toIso8601String(),
+          'page': page,
+        },
+      );
+      final body = response.data;
+      if (body == null) break;
+
+      final items = resource.extractItems(body);
+      for (final item in items) {
+        final id = item[resource.idField].toString();
+        final updatedAtRaw = item[resource.updatedAtField]?.toString();
+        final updatedAt = updatedAtRaw != null ? (DateTime.tryParse(updatedAtRaw) ?? DateTime.now()) : DateTime.now();
+        await _db.upsertEntity(resource.entityType, id, jsonEncode(item), updatedAt);
+        if (updatedAt.isAfter(latest)) latest = updatedAt;
+      }
+      pulled.addAll(items);
+      lastPage = (body['last_page'] as num?)?.toInt() ?? 1;
+      page++;
+    } while (page <= lastPage && page <= _maxPages);
+
     await _db.setLastSyncedAt(resource.entityType, latest);
-    if (items.isNotEmpty) resource.onItemsPulled?.call(items);
+    _fullySynced.add(resource.entityType);
+    if (pulled.isNotEmpty) resource.onItemsPulled?.call(pulled);
   }
 }
 
